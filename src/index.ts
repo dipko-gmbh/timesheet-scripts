@@ -30,7 +30,17 @@ import waitForElm from './helper/waitForElement';
             newSettingsDetailSection.setAttribute('style', 'height: 400px; width: 100vw');
 
             newSettingsDetailSection.innerHTML =
-                '<span class="buttonText">testtestests</span>';
+                '<div class="msgDetailBlock">' +
+                    '<div class="header">GitHub Credentials</div>' +
+                    '<div class="grid">' +
+                        '<div class="label">Username</div>' +
+                        '<input class="value" id="github_user"/>' +
+                    '</div>' + 
+                    '<div class="grid">' +
+                        '<div class="label">Personal Access Token</div>' +
+                        '<input class="value" id="github_pat"/>' +
+                    '</div>' + 
+                '</div>';
         };
         addGitHubCredentialSettings(settingsDetail as Element);
     });
