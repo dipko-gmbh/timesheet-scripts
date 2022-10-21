@@ -12,11 +12,26 @@ import waitForElm from './helper/waitForElement';
                 'style',
                 'border: 0; font-family: "Open sans",Helvetica,Arial,sans-serif!important; background-color: inherit; font-weight: 500;'
             );
-            gitButton.onclick = () => {
-                console.log('i clicked the Button!!');
+            gitButton.onclick = async () => {
+                const user = sessionStorage.getItem('github_user');
+                const pas = sessionStorage.getItem('github_pas');
+                if (!user || !pas) {
+                    console.log('no GitHub user or pas');
+                    return;
+                }
+                // get REPOS
+                const url = `https://api.github.com/user/repos?visibility=public&affiliation=owner&per_page=100`;
+                const repos = await fetch(url, {
+                    headers: {
+                        Authorization: `Basic ${btoa(`${user}:${pas}`)}`,
+                        'Content-Type': 'application/json',
+                        Accept: 'application/vnd.github.v3+json',
+                    },
+                }).then((res) => res.json());
+                console.log(repos);
             };
         };
-        addGitHubButton(filter as Element);
+        addGitHubButton(filter);
     });
 
     waitForElm('.settingsDetails').then((settingsDetail: Element) => {
@@ -26,22 +41,36 @@ import waitForElm from './helper/waitForElement';
             const newSettingsDetailSection = settingsDetail.appendChild(
                 document.createElement('div')
             );
-            newSettingsDetailSection.classList.add('msgDetailBlock');
-            newSettingsDetailSection.setAttribute('style', 'height: 400px; width: 100vw');
+            newSettingsDetailSection.classList.add('msgDetailBlock', 'github_connection');
+            // newSettingsDetailSection.setAttribute('style', 'width: 100vw');
 
             newSettingsDetailSection.innerHTML =
-                '<div class="msgDetailBlock">' +
-                    '<div class="header">GitHub Credentials</div>' +
-                    '<div class="grid">' +
-                        '<div class="label">Username</div>' +
-                        '<input class="value" id="github_user"/>' +
-                    '</div>' + 
-                    '<div class="grid">' +
-                        '<div class="label">Personal Access Token</div>' +
-                        '<input class="value" id="github_pat"/>' +
-                    '</div>' + 
+                '<div class="header">GitHub Credentials</div>' +
+                '<div class="grid">' +
+                    '<div class="label">Username</div>' +
+                    '<div class="value"><input class="msgInput" id="github_user"/></div>' +
+                '</div>' + 
+                '<div class="grid">' +
+                    '<div class="label">Personal Access Token</div>' +
+                    '<div class="value"><input class="msgInput" id="github_pat"/></div>' +
                 '</div>';
+
+            newSettingsDetailSection.querySelector('#github_user')?.addEventListener('change', (e: Event) => {
+                const value = (e.target as HTMLInputElement).value;
+                console.log(value);
+
+                sessionStorage.setItem('github_user', value);
+            });
+
+            newSettingsDetailSection.querySelector('#github_pat')?.addEventListener('change', (e) => {
+                const value = (e.target as HTMLInputElement).value;
+                console.log(value);
+
+                sessionStorage.setItem('github_pat', value);
+            });
         };
-        addGitHubCredentialSettings(settingsDetail as Element);
+        addGitHubCredentialSettings(settingsDetail);
+
+        waitForElm('.github_connection')
     });
 })();
