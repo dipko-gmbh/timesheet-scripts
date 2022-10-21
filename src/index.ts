@@ -1,7 +1,7 @@
 import waitForElm from './helper/waitForElement';
 
 (() => {
-    waitForElm('.filter').then((filter: Element | null) => {
+    waitForElm('.filter').then((filter: Element) => {
         const addGitHubButton = async (filter: Element): Promise<void> => {
             if (!filter) return;
 
@@ -19,7 +19,7 @@ import waitForElm from './helper/waitForElement';
         addGitHubButton(filter as Element);
     });
 
-    waitForElm('.settingsDetails').then((settingsDetail: Element | null) => {
+    waitForElm('.settingsDetails').then((settingsDetail: Element) => {
         if (!settingsDetail) return;
 
         const addGitHubCredentialSettings = async (settingsDetail: Element) => {
