@@ -13,17 +13,18 @@ import waitForElm from './helper/waitForElement';
                 'border: 0; font-family: "Open sans",Helvetica,Arial,sans-serif!important; background-color: inherit; font-weight: 500;'
             );
             gitButton.onclick = async () => {
-                const user = sessionStorage.getItem('github_user');
-                const pas = sessionStorage.getItem('github_pas');
-                if (!user || !pas) {
-                    console.log('no GitHub user or pas');
+                const user = localStorage.getItem('github_user');
+                const pat = localStorage.getItem('github_pat');
+                if (!user || !pat) {
+                    console.log('no GitHub user or pat');
                     return;
                 }
                 // get REPOS
                 const url = `https://api.github.com/user/repos?visibility=public&affiliation=owner&per_page=100`;
                 const repos = await fetch(url, {
                     headers: {
-                        Authorization: `Basic ${btoa(`${user}:${pas}`)}`,
+                        Authorization: `Basic ${btoa(`${user}:${pat}`)}`,
+                        // Authorization: `Bearer ${pat}}`,
                         'Content-Type': 'application/json',
                         Accept: 'application/vnd.github.v3+json',
                     },
@@ -59,14 +60,14 @@ import waitForElm from './helper/waitForElement';
                 const value = (e.target as HTMLInputElement).value;
                 console.log(value);
 
-                sessionStorage.setItem('github_user', value);
+                localStorage.setItem('github_user', value);
             });
 
             newSettingsDetailSection.querySelector('#github_pat')?.addEventListener('change', (e) => {
                 const value = (e.target as HTMLInputElement).value;
                 console.log(value);
 
-                sessionStorage.setItem('github_pat', value);
+                localStorage.setItem('github_pat', value);
             });
         };
         addGitHubCredentialSettings(settingsDetail);
