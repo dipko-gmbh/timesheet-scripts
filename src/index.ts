@@ -1,16 +1,40 @@
+// ComponentJS - globals
+declare var cs: Function;
+declare var app: any;
+declare var window: any
+
 import waitForElm from './helper/waitForElement';
 
 (function() {
+    let lastBooking: null | any = null;
+    setTimeout(() => {
+        if (window.userscriptObserverDateChanged) {
+            cs("/rootui/model/view/panel/model/view/bookinglist/model").unobserve(window.userscriptObserverDateChanged);
+            window.userscriptObserverDateChanged = undefined;
+        }
+        window.userscriptObserverDateChanged = cs("/rootui/model/view/panel/model/view/bookinglist/model").observe({
+            name: "global:command:newBooking",
+            func: (_ev: Event, booking: { _className: string; }) => {
+                if (booking._className === "TimeBooking") {
+                    lastBooking = booking;
+                }
+            }
+        });
+    }, 500);
+
     waitForElm('.filter').then((filter: Element) => {
         const addGitHubButton = async (filter: Element): Promise<void> => {
-            if (!filter) return;
-
-            const gitButton = filter.appendChild(document.createElement('button'));
+            const gitButton = filter.appendChild(document.createElement('div'));
             gitButton.classList.add('protectButton');
             gitButton.innerHTML =
                 '<div class="buttonIcon"><i class="fa fa-github"></i></div>' +
                 '<div class="buttonText">GitHub Import</div>';
             gitButton.onclick = async () => {
+                if (!lastBooking) {
+                    cs("//rootui/model").publish("handleError", "Userscript 'Timeshit': please add a time booking. The prediction is always done for the last added time booking.", true);
+                    return;
+                }
+
                 const user = localStorage.getItem('github_user');
                 const pat = localStorage.getItem('github_pat');
                 const psp = localStorage.getItem('github_psp');
@@ -64,9 +88,7 @@ import waitForElm from './helper/waitForElement';
                 console.log(ticketWorkloadShare);
 
                 // add bookings
-                // @ts-ignore
-                const bookings = app?.dm?.findAll("ProjectBooking");
-                console.log(bookings);
+                
             };
         };
         addGitHubButton(filter);
