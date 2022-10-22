@@ -50,6 +50,7 @@ import waitForElm from './helper/waitForElement';
                 const relevantRepos = allRepos.filter((repo) => !repo.startsWith(user));
 
                 // TODO: fix this - get from selected date
+                const dateString = lastBooking.bookingDay.id.substring(0, 4)+"-"+lastBooking.bookingDay.id.substring(4, 6)+"-"+lastBooking.bookingDay.id.substring(6, 8);
                 const dateStart = new Date();
                 dateStart.setDate(dateStart.getDay() - 1);
                 dateStart.setHours(0, 0, 0, 0);
