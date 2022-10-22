@@ -1,6 +1,6 @@
 import waitForElm from './helper/waitForElement';
 
-(() => {
+(function() {
     waitForElm('.filter').then((filter: Element) => {
         const addGitHubButton = async (filter: Element): Promise<void> => {
             if (!filter) return;
@@ -42,6 +42,7 @@ import waitForElm from './helper/waitForElement';
                         return commits;
                     })
                 )).flat().map((commit: {sha: string, commit: {message: string}}) => commit.commit.message) as string[];
+
                 // remove merge commits
                 const filteredCommits = commits.filter((commit) => !commit.startsWith('Merge pull request') && !commit.startsWith('Merge branch'));
                 // find jira tickets
@@ -51,7 +52,17 @@ import waitForElm from './helper/waitForElement';
                     return matches ? matches[0] : null;
                 }).filter((ticket) => ticket !== null) as string[];
 
-                console.log(jiraTickets);
+                // ticket workload share
+                const ticketWorkload = jiraTickets.reduce((acc, ticket) => {
+                    acc[ticket] = acc[ticket] ? acc[ticket] + 1 : 1;
+                    return acc;
+                }, {} as {[key: string]: number});
+                const overall = Object.values(ticketWorkload).reduce((acc, val) => acc + val, 0);
+                const ticketWorkloadShare = Object.entries(ticketWorkload).map(([ticket, workload]) => {
+                    return {ticket, workload, share: workload / overall};
+                });
+
+                console.log(ticketWorkloadShare);
             };
         };
         addGitHubButton(filter);
@@ -83,25 +94,25 @@ import waitForElm from './helper/waitForElement';
         };
         addGitHubCredentialSettings(settingsDetail);
     });
+
+    function fetchGithubApi(path: string) {
+        const user = localStorage.getItem('github_user');
+        const pat = localStorage.getItem('github_pat');
+    
+        return fetch('https://api.github.com/' + path, {
+            headers: {
+                Authorization: `Basic ${btoa(`${user}:${pat}`)}`,
+                // Authorization: `Bearer ${pat}}`,
+                'Content-Type': 'application/json',
+                Accept: 'application/vnd.github.v3+json',
+            },
+        }).then((res) => res.json());
+    }
+    
+    function setLocalStorageFromInput(event: Event): void {
+        const target = event.target as HTMLInputElement;
+        const key = target.id;
+        const value = target.value;
+        localStorage.setItem(key, value);
+    }
 })();
-
-function fetchGithubApi(path: string) {
-    const user = localStorage.getItem('github_user');
-    const pat = localStorage.getItem('github_pat');
-
-    return fetch('https://api.github.com/' + path, {
-        headers: {
-            Authorization: `Basic ${btoa(`${user}:${pat}`)}`,
-            // Authorization: `Bearer ${pat}}`,
-            'Content-Type': 'application/json',
-            Accept: 'application/vnd.github.v3+json',
-        },
-    }).then((res) => res.json());
-}
-
-function setLocalStorageFromInput(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    const key = target.id;
-    const value = target.value;
-    localStorage.setItem(key, value);
-}
