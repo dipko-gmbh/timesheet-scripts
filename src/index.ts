@@ -20,11 +20,11 @@ import waitForElm from './helper/waitForElement';
                     return;
                 }
                 // get REPOS
-                const url = `https://api.github.com/user/repos?visibility=public&affiliation=owner&per_page=100`;
+                const url = `https://api.github.com/orgs/dipko-gmbh/repos?affiliation=owner&per_page=100`; // visibility=public
                 const repos = await fetch(url, {
                     headers: {
                         Authorization: `Basic ${btoa(`${user}:${pat}`)}`,
-                        // Authorization: `Bearer ${pat}}`,
+                        // Authorization: `token ${pat}}`,
                         'Content-Type': 'application/json',
                         Accept: 'application/vnd.github.v3+json',
                     },
@@ -39,9 +39,10 @@ import waitForElm from './helper/waitForElement';
         if (!settingsDetail) return;
 
         const addGitHubCredentialSettings = async (settingsDetail: Element) => {
-            const newSettingsDetailSection = settingsDetail.appendChild(
-                document.createElement('div')
-            );
+            const user = localStorage.getItem('github_user');
+            const pat = localStorage.getItem('github_pat');
+
+            const newSettingsDetailSection = settingsDetail.appendChild(document.createElement('div'));
             newSettingsDetailSection.classList.add('msgDetailBlock', 'github_connection');
             // newSettingsDetailSection.setAttribute('style', 'width: 100vw');
 
@@ -49,29 +50,25 @@ import waitForElm from './helper/waitForElement';
                 '<div class="header">GitHub Credentials</div>' +
                 '<div class="grid">' +
                     '<div class="label">Username</div>' +
-                    '<div class="value"><input class="msgInput" id="github_user"/></div>' +
+                    `<div class="value"><input class="msgInput" id="github_user" value="${user}"/></div>` +
                 '</div>' + 
                 '<div class="grid">' +
                     '<div class="label">Personal Access Token</div>' +
-                    '<div class="value"><input class="msgInput" id="github_pat"/></div>' +
+                    `<div class="value"><input class="msgInput" id="github_pat" value="${pat}"/></div>` +
                 '</div>';
 
-            newSettingsDetailSection.querySelector('#github_user')?.addEventListener('change', (e: Event) => {
-                const value = (e.target as HTMLInputElement).value;
-                console.log(value);
-
-                localStorage.setItem('github_user', value);
-            });
-
-            newSettingsDetailSection.querySelector('#github_pat')?.addEventListener('change', (e) => {
-                const value = (e.target as HTMLInputElement).value;
-                console.log(value);
-
-                localStorage.setItem('github_pat', value);
-            });
+            newSettingsDetailSection.querySelector('#github_user')?.addEventListener('change', setLocalStorageFromInput);
+            newSettingsDetailSection.querySelector('#github_pat')?.addEventListener('change', setLocalStorageFromInput);
         };
         addGitHubCredentialSettings(settingsDetail);
 
         waitForElm('.github_connection')
     });
 })();
+
+function setLocalStorageFromInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const key = target.id;
+    const value = target.value;
+    localStorage.setItem(key, value);
+}
