@@ -26,9 +26,9 @@ import waitForElm from './helper/waitForElement';
                 const allRepos = (await fetchGithubApi(path)).map((repo: {full_name: string}) => repo.full_name) as string[];
                 const relevantRepos = allRepos.filter((repo) => !repo.startsWith(user));
 
-                console.log(relevantRepos);
-
+                // TODO: fix this - get from selected date
                 const dateStart = new Date();
+                dateStart.setDate(dateStart.getDay() - 1);
                 dateStart.setHours(0, 0, 0, 0);
                 const dateEnd = new Date();
                 dateEnd.setHours(23, 59, 59, 999);
@@ -41,9 +41,17 @@ import waitForElm from './helper/waitForElement';
                         const commits = fetchGithubApi(url);
                         return commits;
                     })
-                )).flat()
+                )).flat().map((commit: {sha: string, commit: {message: string}}) => commit.commit.message) as string[];
+                // remove merge commits
+                const filteredCommits = commits.filter((commit) => !commit.startsWith('Merge pull request') && !commit.startsWith('Merge branch'));
+                // find jira tickets
+                const jiraPattern = /([A-Z]{2,10}-\d{1,6})/g;
+                const jiraTickets = filteredCommits.map((commit) => {
+                    const matches = commit.match(jiraPattern);
+                    return matches ? matches[0] : null;
+                }).filter((ticket) => ticket !== null) as string[];
 
-                console.log(commits);
+                console.log(jiraTickets);
             };
         };
         addGitHubButton(filter);
