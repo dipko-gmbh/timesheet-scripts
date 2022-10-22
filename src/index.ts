@@ -6,15 +6,14 @@ import waitForElm from './helper/waitForElement';
             if (!filter) return;
 
             const gitButton = filter.appendChild(document.createElement('button'));
-            gitButton.innerHTML = '<span class="buttonText">GitHub Import</span>';
             gitButton.classList.add('protectButton');
-            gitButton.setAttribute(
-                'style',
-                'border: 0; font-family: "Open sans",Helvetica,Arial,sans-serif!important; background-color: inherit; font-weight: 500;'
-            );
+            gitButton.innerHTML =
+                '<div class="buttonIcon"><i class="fa fa-github"></i></div>' +
+                '<div class="buttonText">GitHub Import</div>';
             gitButton.onclick = async () => {
                 const user = localStorage.getItem('github_user');
                 const pat = localStorage.getItem('github_pat');
+                const psp = localStorage.getItem('github_psp');
 
                 if (!user || !pat) {
                     console.log('no GitHub user or pat or orga');
@@ -63,6 +62,11 @@ import waitForElm from './helper/waitForElement';
                 });
 
                 console.log(ticketWorkloadShare);
+
+                // add bookings
+                // @ts-ignore
+                const bookings = app?.dm?.findAll("ProjectBooking");
+                console.log(bookings);
             };
         };
         addGitHubButton(filter);
@@ -74,6 +78,10 @@ import waitForElm from './helper/waitForElement';
         const addGitHubCredentialSettings = async (settingsDetail: Element) => {
             const user = localStorage.getItem('github_user') || '';
             const pat = localStorage.getItem('github_pat') || '';
+            const psp = localStorage.getItem('github_psp') || '';
+            const pspElems: {id: string, name: string}[] = 
+                // @ts-ignore
+                window['app'] ? app.dm?.findByExample("PSPElement", {}) : [];
 
             const newSettingsDetailSection = settingsDetail.appendChild(document.createElement('div'));
             newSettingsDetailSection.classList.add('msgDetailBlock', 'github_connection');
@@ -87,10 +95,22 @@ import waitForElm from './helper/waitForElement';
                 '<div class="grid">' +
                     '<div class="label">Personal Access Token</div>' +
                     `<div class="value"><input class="msgInput" id="github_pat" value="${pat}"/></div>` +
+                '</div>' + 
+                '<div class="grid">' +
+                    '<div class="label">Default PSP-Element</div>' +
+                    '<div class="value">' +
+                        '<select class="msgInput" id="github_psp">' +
+                            pspElems.map(pspElem => 
+                                `<option value="${pspElem.id}"${psp === pspElem.id ? ' selected' : ''}>` + 
+                                `${pspElem.name}</option>`
+                            ).join('') +
+                        '</select>' +
+                    '</div>' +
                 '</div>';
 
             newSettingsDetailSection.querySelector('#github_user')?.addEventListener('change', setLocalStorageFromInput);
             newSettingsDetailSection.querySelector('#github_pat')?.addEventListener('change', setLocalStorageFromInput);
+            newSettingsDetailSection.querySelector('#github_psp')?.addEventListener('change', setLocalStorageFromInput);
         };
         addGitHubCredentialSettings(settingsDetail);
     });
