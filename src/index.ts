@@ -20,7 +20,7 @@ import waitForElm from './helper/waitForElement';
                 }
             }
         });
-    }, 500);
+    }, 2000);
 
     waitForElm('.filter').then((filter: Element) => {
         const addGitHubButton = async (filter: Element): Promise<void> => {
@@ -38,6 +38,7 @@ import waitForElm from './helper/waitForElement';
                 const user = localStorage.getItem('github_user');
                 const pat = localStorage.getItem('github_pat');
                 const psp = localStorage.getItem('github_psp');
+                const pspElem = app.dm.findByExample("PSPElement", {}).find((elem: { id: string; }) => elem.id === psp);
 
                 if (!user || !pat) {
                     console.log('no GitHub user or pat or orga');
@@ -50,11 +51,10 @@ import waitForElm from './helper/waitForElement';
                 const relevantRepos = allRepos.filter((repo) => !repo.startsWith(user));
 
                 // TODO: fix this - get from selected date
-                const dateString = lastBooking.bookingDay.id.substring(0, 4)+"-"+lastBooking.bookingDay.id.substring(4, 6)+"-"+lastBooking.bookingDay.id.substring(6, 8);
-                const dateStart = new Date();
+                const dateStart = new Date(lastBooking.bookingDay.id.substring(0, 4), lastBooking.bookingDay.id.substring(4, 6), lastBooking.bookingDay.id.substring(6, 8));
                 dateStart.setDate(dateStart.getDay() - 1);
                 dateStart.setHours(0, 0, 0, 0);
-                const dateEnd = new Date();
+                const dateEnd = new Date(dateStart);
                 dateEnd.setHours(23, 59, 59, 999);
 
                 // get commits from GitHub
@@ -65,7 +65,7 @@ import waitForElm from './helper/waitForElement';
                         const commits = fetchGithubApi(url);
                         return commits;
                     })
-                )).flat().map((commit: {sha: string, commit: {message: string}}) => commit.commit.message) as string[];
+                )).flat().map((commit: {commit: {message: string}}) => commit.commit.message) as string[];
 
                 // remove merge commits
                 const filteredCommits = commits.filter((commit) => !commit.startsWith('Merge pull request') && !commit.startsWith('Merge branch'));
@@ -89,7 +89,13 @@ import waitForElm from './helper/waitForElement';
                 console.log(ticketWorkloadShare);
 
                 // add bookings
-                
+                const bookings = ticketWorkloadShare.map(tws => {
+                    const booking = app.util.EntityCreateUtil.createProjectBooking(lastBooking);
+                    booking.description = `${tws.ticket}: ${tws.workload} commits`;
+                    // TODO: maybe remove the time used by other bookings
+                    booking.duration = Math.round(lastBooking.duration * tws.share);
+                    booking.pspelement = pspElem;
+                });
             };
         };
         addGitHubButton(filter);
