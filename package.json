@@ -6,8 +6,8 @@
   "scripts": {
     "start": "npm run build && node build/index.js",
     "start:dev": "nodemon",
-    "build:webpack": "npx webpack -w",
-    "build": "rm -rf build && tsc"
+    "build:webpack": "webpack -w",
+    "build": "rm -rf build && webpack"
   },
   "repository": {
     "type": "git",
