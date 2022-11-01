@@ -22,6 +22,11 @@ import waitForElm from './helper/waitForElement';
         });
     }, 2000);
 
+    // auto-click skip button
+    waitForElm(".introjs-button.introjs-skipbutton").then((elm: any) => {
+        elm.click();
+    });
+
     waitForElm('.filter').then((filter: Element) => {
         const addGitHubButton = async (filter: Element): Promise<void> => {
             const gitButton = filter.appendChild(document.createElement('div'));
