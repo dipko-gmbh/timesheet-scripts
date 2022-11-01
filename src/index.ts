@@ -47,10 +47,7 @@ import waitForElm from './helper/waitForElement';
 
                 if (!user || !pat) {
                     console.error('no GitHub user or pat or orga');
-                    if (!lastBooking) {
-                        cs("//rootui/model").publish("handleError", "Userscript 'Timeshit': To use this feature you first need to set the github credentials in the settings tab and reload!", true);
-                        return;
-                    }
+                    cs("//rootui/model").publish("handleError", "Userscript 'Timeshit': To use this feature you first need to set the github credentials in the settings tab and reload!", true);
                     return;
                 }
 
