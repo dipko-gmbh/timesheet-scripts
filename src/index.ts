@@ -46,7 +46,11 @@ import waitForElm from './helper/waitForElement';
                 const pspElem = app.dm.findByExample("PSPElement", {}).find((elem: { id: string; }) => elem.id === psp);
 
                 if (!user || !pat) {
-                    console.log('no GitHub user or pat or orga');
+                    console.error('no GitHub user or pat or orga');
+                    if (!lastBooking) {
+                        cs("//rootui/model").publish("handleError", "Userscript 'Timeshit': To use this feature you first need to set the github credentials in the settings tab and reload!", true);
+                        return;
+                    }
                     return;
                 }
 
