@@ -111,7 +111,7 @@ import waitForElm from './helper/waitForElement';
                 });
                 // re-render
                 cs("/rootui/model/view/panel/model/view/bookinglist/model").touch("global:data:bookings");
-                cs("//rootui/model").value("command:showMessage", "Received predicted project bookings");
+                cs("//rootui/model").value("command:showMessage", "Added Jira Ticket bookings from GitHub");
             };
         };
         addGitHubButton(filter);
@@ -124,9 +124,7 @@ import waitForElm from './helper/waitForElement';
             const user = localStorage.getItem('github_user') || '';
             const pat = localStorage.getItem('github_pat') || '';
             const psp = localStorage.getItem('github_psp') || '';
-            const pspElems: {id: string, name: string}[] = 
-                // @ts-ignore
-                window['app'] ? app.dm?.findByExample("PSPElement", {}) : [];
+            const pspElems: {id: string, name: string}[] = window['app'] ? app.dm?.findByExample("PSPElement", {}) : [];
 
             const newSettingsDetailSection = settingsDetail.appendChild(document.createElement('div'));
             newSettingsDetailSection.classList.add('msgDetailBlock', 'github_connection');
@@ -166,8 +164,8 @@ import waitForElm from './helper/waitForElement';
     
         return fetch('https://api.github.com/' + path, {
             headers: {
-                Authorization: `Basic ${btoa(`${user}:${pat}`)}`,
-                // Authorization: `Bearer ${pat}}`,
+                // Authorization: `Bearer ${pat}}`, // <-- according to docs this should work, but it doesn't
+                Authorization: `Basic ${btoa(`${user}:${pat}`)}`, // <-- this does
                 'Content-Type': 'application/json',
                 Accept: 'application/vnd.github.v3+json',
             },
