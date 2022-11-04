@@ -96,7 +96,11 @@ import waitForElm from './helper/waitForElement';
                 }, {} as {[key: string]: number});
                 const overall = Object.values(ticketWorkload).reduce((acc, val) => acc + val, 0);
                 const ticketWorkloadShare = Object.entries(ticketWorkload).map(([ticket, workload]) => {
-                    return {ticket, workload, share: workload / overall};
+                    return {
+                        ticket,
+                        workload,
+                        share: workload / overall
+                    };
                 });
 
                 console.log(ticketWorkloadShare);
@@ -104,7 +108,12 @@ import waitForElm from './helper/waitForElement';
                 // add bookings
                 const bookings = ticketWorkloadShare.map(tws => {
                     const booking = app.util.EntityCreateUtil.createProjectBooking(lastBooking);
-                    booking.description = `${tws.ticket}: ${tws.workload} commits`;
+                    if (tws.workload > 1) {
+                        booking.description = `${tws.ticket}: ${tws.workload} commits`;
+                    } else {
+                        const commit = filteredCommits.find((commit) => commit.includes(tws.ticket));
+                        booking.description = `${tws.ticket}: ${commit}`;
+                    }
                     // TODO: maybe remove the time used by other bookings
                     booking.duration = Math.round(lastBooking.duration * tws.share);
                     booking.pspelement = pspElem;
