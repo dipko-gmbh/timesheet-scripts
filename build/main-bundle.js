@@ -1,3 +1,14 @@
+// ==UserScript==
+// @name         Timeshit
+// @namespace    http://tampermonkey.net/
+// @version      1.0
+// @description  Make Timesheet less shit!
+// @author       DIPKO
+// @match        https://timesheet.msg.de/
+// @icon         https://dipko.de/cms/wp-content/uploads/2022/06/cropped-dipko_favicon-192x192.png
+// @grant        none
+// ==/UserScript==
+
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
