@@ -64,8 +64,11 @@ import waitForElm from './helper/waitForElement';
                 );
                 dateStart.setDate(dateStart.getDay() - 1);
                 dateStart.setHours(0, 0, 0, 0);
+
                 const dateEnd = new Date(dateStart);
                 dateEnd.setHours(23, 59, 59, 999);
+
+                console.log(dateStart);
 
                 // get commits from GitHub
                 const commits = (await Promise.all(
@@ -106,6 +109,9 @@ import waitForElm from './helper/waitForElement';
                     booking.duration = Math.round(lastBooking.duration * tws.share);
                     booking.pspelement = pspElem;
                 });
+                // re-render
+                cs("/rootui/model/view/panel/model/view/bookinglist/model").touch("global:data:bookings");
+                cs("//rootui/model").value("command:showMessage", "Received predicted project bookings");
             };
         };
         addGitHubButton(filter);
