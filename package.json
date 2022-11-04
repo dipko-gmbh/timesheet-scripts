@@ -7,7 +7,7 @@
     "start": "npm run build && node build/index.js",
     "start:dev": "nodemon",
     "build:webpack": "webpack -w",
-    "build": "rm -rf build && webpack"
+    "build": "rm -rf build && webpack && cat userscript.header.txt > build/timeshit.user.js && cat build/main-bundle.js >> build/timeshit.user.js"
   },
   "repository": {
     "type": "git",
