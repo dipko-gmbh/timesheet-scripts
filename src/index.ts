@@ -35,7 +35,7 @@ import waitForElm from './helper/waitForElement';
                 '<div class="buttonIcon"><i class="fa fa-github"></i></div>' +
                 '<div class="buttonText">GitHub Import</div>';
             gitButton.onclick = async () => {
-                if (!lastBooking) {
+                if (!lastBooking || lastBooking === 'empty') {
                     cs("//rootui/model").publish("handleError", "Userscript 'Timeshit': please add a time booking. The prediction is always done for the last added time booking.", true);
                     return;
                 }
@@ -67,8 +67,6 @@ import waitForElm from './helper/waitForElement';
 
                 const dateEnd = new Date(dateStart);
                 dateEnd.setHours(23, 59, 59, 999);
-
-                console.log(dateStart);
 
                 // get commits from GitHub
                 const commits = (await Promise.all(
@@ -105,6 +103,14 @@ import waitForElm from './helper/waitForElement';
 
                 console.log(ticketWorkloadShare);
 
+                // unbooked working hours
+                const dayDuration = lastBooking.bookingDay.timeBookings.reduce((acc: number, time: any) => acc + parseFloat(time.duration), 0);
+                const unbookedHours = !lastBooking.bookingDay?.timeBookings || lastBooking.bookingDay.timeBookings.length === 0
+                    ? dayDuration
+                    : dayDuration - lastBooking.bookingDay.timeBookings.reduce((acc: number, booking: any) => {
+                        return acc + booking.projectBookings.reduce((acc2: number, booking2: any) => acc2 + parseFloat(booking2.duration), 0);
+                    }, 0);
+
                 // add bookings
                 const bookings = ticketWorkloadShare.map(tws => {
                     const booking = app.util.EntityCreateUtil.createProjectBooking(lastBooking);
@@ -115,9 +121,11 @@ import waitForElm from './helper/waitForElement';
                         booking.description = `${tws.ticket}: ${commit}`;
                     }
                     // TODO: maybe remove the time used by other bookings
-                    booking.duration = Math.round(lastBooking.duration * tws.share);
+                    booking.duration = Math.round(unbookedHours * tws.share);
                     booking.pspelement = pspElem;
                 });
+                console.log(bookings);
+
                 // re-render
                 cs("/rootui/model/view/panel/model/view/bookinglist/model").touch("global:data:bookings");
                 cs("//rootui/model").value("command:showMessage", "Added Jira Ticket bookings from GitHub");
