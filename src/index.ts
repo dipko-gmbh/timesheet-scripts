@@ -7,7 +7,6 @@ declare var lastBooking: any
 import waitForElm from './helper/waitForElement';
 
 (function() {
-    // let lastBooking: null | any = null;
     setTimeout(() => {
         if (window.userscriptObserverDateChanged) {
             cs("/rootui/model/view/panel/model/view/bookinglist/model").unobserve(window.userscriptObserverDateChanged);
@@ -17,7 +16,7 @@ import waitForElm from './helper/waitForElement';
             name: "global:command:newBooking",
             func: (_ev: Event, booking: { _className: string; }) => {
                 if (booking._className === "TimeBooking") {
-                    lastBooking = booking;
+                    window.lastBooking = booking;
                 }
             }
         });
