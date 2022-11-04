@@ -2,21 +2,24 @@
 declare var cs: Function;
 declare var app: any;
 declare var window: any
-declare var lastBooking: any
 
+import { Booking } from './model/booking';
 import waitForElm from './helper/waitForElement';
 
 (function() {
+    let lastBooking: Booking | null = null;
+    let lastBookingObserver: any = null;
+
     setTimeout(() => {
-        if (window.userscriptObserverDateChanged) {
-            cs("/rootui/model/view/panel/model/view/bookinglist/model").unobserve(window.userscriptObserverDateChanged);
-            window.userscriptObserverDateChanged = undefined;
+        if (lastBookingObserver) {
+            cs("/rootui/model/view/panel/model/view/bookinglist/model").unobserve(lastBookingObserver);
+            lastBookingObserver = undefined;
         }
-        window.userscriptObserverDateChanged = cs("/rootui/model/view/panel/model/view/bookinglist/model").observe({
+        lastBookingObserver = cs("/rootui/model/view/panel/model/view/bookinglist/model").observe({
             name: "global:command:newBooking",
             func: (_ev: Event, booking: { _className: string; }) => {
                 if (booking._className === "TimeBooking") {
-                    window.lastBooking = booking;
+                    lastBooking = booking as Booking;
                 }
             }
         });
@@ -35,7 +38,7 @@ import waitForElm from './helper/waitForElement';
                 '<div class="buttonIcon"><i class="fa fa-github"></i></div>' +
                 '<div class="buttonText">GitHub Import</div>';
             gitButton.onclick = async () => {
-                if (!lastBooking || lastBooking === 'empty') {
+                if (!lastBooking) {
                     cs("//rootui/model").publish("handleError", "Userscript 'Timeshit': please add a time booking. The prediction is always done for the last added time booking.", true);
                     return;
                 }
@@ -58,9 +61,9 @@ import waitForElm from './helper/waitForElement';
 
                 // TODO: fix this - get from selected date
                 const dateStart = new Date(
-                    lastBooking.bookingDay.id.substring(0, 4),
+                    parseInt(lastBooking.bookingDay.id.substring(0, 4)),
                     parseInt(lastBooking.bookingDay.id.substring(4, 6)) - 1,
-                    lastBooking.bookingDay.id.substring(6, 8)
+                    parseInt(lastBooking.bookingDay.id.substring(6, 8))
                 );
                 dateStart.setDate(dateStart.getDay() - 1);
                 dateStart.setHours(0, 0, 0, 0);
@@ -103,16 +106,17 @@ import waitForElm from './helper/waitForElement';
 
                 console.log(ticketWorkloadShare);
 
-                // unbooked working hours
-                const dayDuration = lastBooking.bookingDay.timeBookings.reduce((acc: number, time: any) => acc + parseFloat(time.duration), 0);
+                // calc unbooked working hours
+                const dayDuration = lastBooking.bookingDay.timeBookings.reduce((acc, time) => acc + parseFloat(time.duration), 0);
                 const unbookedHours = !lastBooking.bookingDay?.timeBookings || lastBooking.bookingDay.timeBookings.length === 0
                     ? dayDuration
-                    : dayDuration - lastBooking.bookingDay.timeBookings.reduce((acc: number, booking: any) => {
-                        return acc + booking.projectBookings.reduce((acc2: number, booking2: any) => acc2 + parseFloat(booking2.duration), 0);
+                    : dayDuration - lastBooking.bookingDay.timeBookings.reduce((acc, booking) => {
+                        return acc + booking.projectBookings.reduce(
+                            (acc2, projectBooking) => acc2 + parseFloat(projectBooking.duration), 0);
                     }, 0);
 
                 // add bookings
-                const bookings = ticketWorkloadShare.map(tws => {
+                ticketWorkloadShare.forEach(tws => {
                     const booking = app.util.EntityCreateUtil.createProjectBooking(lastBooking);
                     if (tws.workload > 1) {
                         booking.description = `${tws.ticket}: ${tws.workload} commits`;
@@ -120,13 +124,9 @@ import waitForElm from './helper/waitForElement';
                         const commit = filteredCommits.find((commit) => commit.includes(tws.ticket));
                         booking.description = `${tws.ticket}: ${commit}`;
                     }
-                    // TODO: maybe remove the time used by other bookings
                     booking.duration = Math.round(unbookedHours * tws.share * 100) / 100;
                     booking.pspelement = pspElem;
-
-                    return booking;
                 });
-                console.log(bookings);
 
                 // re-render
                 cs("/rootui/model/view/panel/model/view/bookinglist/model").touch("global:data:bookings");
