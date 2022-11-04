@@ -2,11 +2,12 @@
 declare var cs: Function;
 declare var app: any;
 declare var window: any
+declare var lastBooking: any
 
 import waitForElm from './helper/waitForElement';
 
 (function() {
-    let lastBooking: null | any = null;
+    // let lastBooking: null | any = null;
     setTimeout(() => {
         if (window.userscriptObserverDateChanged) {
             cs("/rootui/model/view/panel/model/view/bookinglist/model").unobserve(window.userscriptObserverDateChanged);
