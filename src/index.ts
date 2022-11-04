@@ -121,8 +121,10 @@ import waitForElm from './helper/waitForElement';
                         booking.description = `${tws.ticket}: ${commit}`;
                     }
                     // TODO: maybe remove the time used by other bookings
-                    booking.duration = Math.round(unbookedHours * tws.share);
+                    booking.duration = Math.round(unbookedHours * tws.share * 100) / 100;
                     booking.pspelement = pspElem;
+
+                    return booking;
                 });
                 console.log(bookings);
 
