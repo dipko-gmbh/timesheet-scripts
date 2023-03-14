@@ -23,7 +23,7 @@ import waitForElm from './helper/waitForElement';
                 }
             }
         });
-    }, 1300);
+    }, 1700);
 
     // auto-click skip button
     waitForElm(".introjs-button.introjs-skipbutton").then((elm: any) => {
